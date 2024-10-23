@@ -1,23 +1,36 @@
 <?php
 session_start();
-require 'db.php';
+require 'db.php'; 
 
-if (!isset($_SESSION['username'])) {
+if (!isset($_SESSION['username'])) { 
     header("Location: login.php");
     exit;
 }
 
 $id = $_GET['id'];  
 
-$sql = "SELECT * FROM products WHERE id = ?";
+$sql = "SELECT * FROM products WHERE id = ?"; 
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $id);
 $stmt->execute();
 $product = $stmt->get_result()->fetch_assoc();
 
 if (!$product) {
-    echo "Product not found!";
+    echo "Product not found!"; 
     exit;
+}
+
+
+if (isset($_POST['delete'])) {
+    $deleteSql = "DELETE FROM products WHERE id = ?";
+    $deleteStmt = $conn->prepare($deleteSql);
+    $deleteStmt->bind_param("i", $id);
+    if ($deleteStmt->execute()) {
+        header("Location: index.php"); 
+        exit;
+    } else {
+        echo "Failed to delete product!";
+    }
 }
 ?>
 
@@ -41,17 +54,17 @@ if (!$product) {
             margin-bottom: 20px;
         }
         .product-details {
-            display: flex; /* Use flexbox for layout */
-            width: 80%; /* Adjust width as needed */
-            margin: 0 auto; /* Center the container */
+            display: flex; 
+            width: 80%; 
+            margin: 0 auto; 
             background-color: #fff;
             border-radius: 8px;
             box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
             padding: 20px;
-            gap: 20px; /* Space between text and image */
+            gap: 20px; 
         }
         .details {
-            flex: 1; /* Take up available space */
+            flex: 1; 
         }
         .details p {
             font-size: 16px;
@@ -61,29 +74,46 @@ if (!$product) {
         .details .price {
             font-weight: bold;
             font-size: 18px;
-            color: #e67e22; /* Price color */
+            color: #e67e22; 
         }
         .product-details img {
-            max-width: 300px; /* Set a max-width for the image */
+            max-width: 300px; 
             border-radius: 8px;
             display: block;
-            margin: 0 auto; /* Center the image */
+            margin: 0 auto; 
         }
         .actions {
-            text-align: left; /* Align text to the left */
-            margin-top: 20px; /* Add some space above buttons */
+            text-align: left; 
+            margin-top: 20px; 
         }
         .actions a {
             padding: 10px 15px;
-            background-color: #0071e3; /* Button color */
-            color: white; /* Text color */
+            background-color: #0071e3; 
+            color: white; 
             border-radius: 5px;
-            text-decoration: none; /* Remove underline */
-            margin-right: 5px; /* Space between buttons */
-            transition: background-color 0.3s; /* Smooth transition */
+            text-decoration: none; 
+            margin-right: 5px; 
+            transition: background-color 0.3s; 
         }
         .actions a:hover {
-            background-color: #005bb5; /* Darker shade on hover */
+            background-color: #005bb5; 
+        }
+        .actions form {
+            display: inline; 
+        }
+        .actions button {
+            padding: 10px 15px; 
+            background-color: #0071e3; 
+            color: white; 
+            border-radius: 5px; 
+            border: none; 
+            cursor: pointer; 
+            text-decoration: none; 
+            margin-right: 5px; 
+            transition: background-color 0.3s; 
+        }
+        .actions button:hover {
+            background-color: #005bb5; 
         }
     </style>
 </head>
@@ -98,7 +128,9 @@ if (!$product) {
         <div class="actions">
             <a href="index.php">Back to Home</a>
             <a href="edit_product.php?id=<?php echo $product['id']; ?>">Edit</a>
-            <a href="delete_product.php?id=<?php echo $product['id']; ?>">Delete</a>
+            <form action="" method="post" style="display:inline;">
+                <button type="submit" name="delete" onclick="return confirm('Are you sure you want to delete this product?');">Delete</button>
+            </form>
         </div>
     </div>
     <img src="<?php echo htmlspecialchars($product['image']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>">
